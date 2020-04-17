@@ -1,13 +1,15 @@
+"""
+Kitty backend for imgcat.
+"""
+
 import sys
 import os
 import base64
+from collections import OrderedDict
+from base64 import standard_b64encode
+
 
 ESC = b'\033'
-
-
-
-import sys
-from base64 import standard_b64encode
 
 TMUX_WRAP_ST = b'\033Ptmux;'
 TMUX_WRAP_ED = b'\033\\'
@@ -73,7 +75,11 @@ def _write_image(buf, fp, height):
         fp.write(CSI + str(height).encode() + b"F")     # PEP-461
         fp.flush()
 
-    write_chunked({'a': 'T', 'f': 100}, buf)
+    cmd = OrderedDict([
+        ('a', 'T'),
+        ('f', 100),
+    ])
+    write_chunked(cmd, buf)
 
     # move back the cursor
     if is_tmux:
@@ -96,3 +102,9 @@ def write_chunked(cmd, data):
 if __name__ == '__main__':
     with open(sys.argv[-1], 'rb') as f:
         _write_image(fp=sys.stdout.buffer, buf=f.read(), height=10)
+
+
+__all__ = (
+    'clear',
+    '_write_image',
+)
